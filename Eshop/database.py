@@ -28,4 +28,6 @@ class Products(db.Model):
     name = db.Column(db.Text, nullable=False)
     desc = db.Column(db.Text, nullable=False)
     quantity_available = db.Column(db.Integer, nullable=False)
+    on_sale = db.Column(db.Boolean, nullable=False, default=False)
+    price_after_sale = db.Column(db.Float, nullable=False)
     price = db.Column(db.Float, nullable=False)
