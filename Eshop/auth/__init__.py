@@ -1,24 +1,26 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, Email
-from ..database import User
+
+from Eshop.database import User, db 
 
 SALT_TIMES = 10
 
-class Login(FlaskForm):
-    email = StringField("Email", validators=[DataRequired(), Email()])
-    password = PasswordField("Password", validators=[DataRequired()])
-    submit = SubmitField("Login!")
+
+class LoginForm(FlaskForm):
+    email = StringField(validators=[DataRequired(), Email()])
+    password = PasswordField(validators=[DataRequired()])
+    submit = SubmitField()
 
 
-class SignUp(FlaskForm):
-    username = StringField("Username", validators=[DataRequired()])
-    email = StringField("Email", validators=[DataRequired(), Email()])
-    password = PasswordField("Password", validators=[DataRequired()])
-    submit = SubmitField("SignUp!")
+class SignUpForm(FlaskForm):
+    username = StringField(validators=[DataRequired()])
+    email = StringField(validators=[DataRequired(), Email()])
+    password = PasswordField(validators=[DataRequired()])
+    submit = SubmitField()
 
 
 auth = Blueprint("auth", __name__, template_folder="templates", static_folder="static")
@@ -26,11 +28,14 @@ auth = Blueprint("auth", __name__, template_folder="templates", static_folder="s
 
 @auth.route("/user/login", methods=["GET", "POST"])
 def login():
-    form = Login()
+    form = LoginForm()
     if request.method == "POST":
+        print(f"{form.validate_on_submit() = }")
+        print(form.errors)
         if form.validate_on_submit():
-            email = form.email.name
-            password = form.password.name
+            print('User logging in')
+            email = form.email.data
+            password = form.password.data
             user_obj = User.query.filter_by(email=email).first()
 
             if user_obj is not None:
@@ -46,10 +51,11 @@ def login():
 
 @auth.route("/user/signup", methods=["GET", "POST"])
 def signup():
-    form = SignUp()
+    form = SignUpForm()
     if request.method == "POST":
         if form.validate_on_submit():
-            username = form.username.name
-            email = form.email.name
-            password = form.password.name
+            # username = form.username.data
+            # email = form.email.data
+            # password = form.password.data
+            print("Signup done")
     return render_template("signup.html", form=form)

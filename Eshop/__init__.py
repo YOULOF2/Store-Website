@@ -3,26 +3,31 @@ from os import getenv
 from pathlib import Path
 
 from shop import shop
-from auth import auth
-from database import db as root_db, DATABASE_FILE_LOCATION
+from auth import auth as auth_app
+from Eshop.database import db
 
 from dotenv import load_dotenv
+
 load_dotenv()
+
+DATABASE_FILE_LOCATION = "database/database.db"
 
 
 def create_app():
     flask_app = Flask(__name__)
-    root_db.init_app(app)
+    db.init_app(flask_app)
 
     flask_app.register_blueprint(shop)
-    flask_app.register_blueprint(auth)
+    flask_app.register_blueprint(auth_app)
     flask_app.secret_key = getenv("SECRET_KEY")
-    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:////{DATABASE_FILE_LOCATION}"
+    flask_app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DATABASE_FILE_LOCATION}"
+    flask_app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     database_file = Path(DATABASE_FILE_LOCATION)
+    print(database_file.is_file())
     if not database_file.is_file():
-        with app.app_context():
-            root_db.create_all()
+        with flask_app.app_context():
+            db.create_all()
 
     return flask_app
 
