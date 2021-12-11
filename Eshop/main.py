@@ -1,6 +1,6 @@
 from flask import Flask, render_template, redirect, url_for, request, flash
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import current_user, login_user, LoginManager
+from flask_login import current_user, login_user, logout_user, LoginManager
 from database import User, Products, db, get_time
 from forms import LoginForm, SignUpForm
 from dotenv import load_dotenv
@@ -8,6 +8,7 @@ from os import getenv
 from pathlib import Path
 from uuid import uuid4
 from datetime import datetime
+from decorators import is_authenticated, not_authenticated
 
 DATABASE_FILE_LOCATION = "database.db"
 SALT_TIMES = 10
@@ -39,7 +40,7 @@ eshop = create_app()
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.get(user_id)
+    return User.query.get(user_id)
 
 
 @eshop.route("/")
@@ -82,6 +83,7 @@ def home():
 
 
 @eshop.route("/user/login", methods=["GET", "POST"])
+@not_authenticated
 def login():
     form = LoginForm()
     if request.method == "POST":
@@ -91,9 +93,11 @@ def login():
             user_obj = User.query.filter_by(email=email).first()
 
             if user_obj is not None:
-                is_pass_correct = check_password_hash(password=password, pwhash=user_obj.passsword)
+                print(f"{vars(user_obj) = }")
+                is_pass_correct = check_password_hash(password=password, pwhash=user_obj.password)
                 if is_pass_correct:
-                    login_user(current_user)
+                    login_user(user_obj)
+                    return redirect(url_for("home"))
                 else:
                     flash("Wrong Password. Please Try Again")
                     return redirect(url_for("login"))
@@ -108,6 +112,7 @@ def login():
 
 
 @eshop.route("/user/signup", methods=["GET", "POST"])
+@not_authenticated
 def signup():
     form = SignUpForm()
     if request.method == "POST":
@@ -116,14 +121,16 @@ def signup():
             email = form.email.data
             password = form.password.data
 
-            is_email_registered = True if User.query.filter_by(email=email) is not None else False
+            is_email_registered = True if User.query.filter_by(email=email).first() is not None else False
             if not is_email_registered:
                 hashed_password = generate_password_hash(password, salt_length=SALT_TIMES)
                 new_user = User(username=username, email=email, password=hashed_password)
 
-                db.session.commit(new_user)
+                db.session.add(new_user)
+                db.session.commit()
 
-                login(current_user)
+                login_user(new_user)
+                return redirect(url_for("home"))
             else:
                 flash("You are already registered, please login.")
                 return redirect(url_for("login"))
@@ -132,6 +139,50 @@ def signup():
             return redirect(url_for("signup"))
 
     return render_template("auth/signup.html", form=form)
+
+
+@eshop.route("/user/logout")
+@is_authenticated
+def logout():
+    logout_user()
+    return redirect(url_for("home"))
+
+
+@eshop.route("/cart/add")
+@is_authenticated
+def add_to_cart():
+    product_id = request.args.get("product_id")
+    product_obj = Products.query.filter_by(product_id=product_id).first()
+    user_cart = current_user.shopping_cart
+
+    user_cart.append(product_obj)
+    db.session.commit()
+    print(user_cart)
+
+    return redirect(url_for("home"))
+
+
+@eshop.route("/user/cart")
+@is_authenticated
+def cart():
+    current_user_id = current_user.get_id()
+    user_obj = User.query.get(current_user_id)
+    user_cart = user_obj.shopping_cart
+
+    sub_total = 0
+    for product in user_cart:
+        if product.on_sale:
+            sub_total += product.price_after_sale
+        else:
+            sub_total += product.price
+    return render_template("shop/cart.html", cart=user_cart, sub_total=sub_total)
+
+
+@eshop.route("/product")
+def show_product():
+    product_id = request.args.get("product_id")
+    product_obj = Products.query.filter_by(product_id=product_id).first()
+    return render_template("shop/product.html", product=product_obj)
 
 
 @eshop.route("/admin")

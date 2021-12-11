@@ -30,7 +30,7 @@ class Products(db.Model):
     __tablename__ = "products"
     id = db.Column(db.Integer, primary_key=True)
 
-    product_id = db.Column(db.Integer, nullable=False)
+    product_id = db.Column(db.Integer, nullable=False, unique=True)
     pictures = db.Column(MutableList.as_mutable(PickleType), default=[])
     name = db.Column(db.Text, nullable=False)
     desc = db.Column(db.Text, nullable=False)
