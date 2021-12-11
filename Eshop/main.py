@@ -1,11 +1,13 @@
 from flask import Flask, render_template, redirect, url_for, request, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_user, LoginManager
-from database import User, Products, db
+from database import User, Products, db, get_time
 from forms import LoginForm, SignUpForm
 from dotenv import load_dotenv
 from os import getenv
 from pathlib import Path
+from uuid import uuid4
+from datetime import datetime
 
 DATABASE_FILE_LOCATION = "database.db"
 SALT_TIMES = 10
@@ -42,7 +44,41 @@ def load_user(user_id):
 
 @eshop.route("/")
 def home():
-    return render_template("shop/index.html")
+    # for _ in range(50):
+    #     new_product = Products(
+    #         product_id=str(uuid4()).split("-")[0],
+    #         pictures=["https://www.ubuy.com.bh/productimg/?image"
+    #                   "=aHR0cHM6Ly9tLm1lZGlhLWFtYXpvbi5jb20vaW1hZ2VzL0kvNTFjR0NCeHFyUkwuX0FDX1NMMTAwMF8uanBn.jpg"],
+    #         name="Teddy Bear",
+    #         desc=" Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    #         quantity_available=10,
+    #         price=10.00,
+    #         rating=3
+    #     )
+    #     db.session.add(new_product)
+    #     db.session.commit()
+
+    sort_type = request.args.get("sort")
+    match sort_type:
+        case "popular":
+            query = db.session.query(Products)
+            products = query.order_by(Products.quantity_sold)
+            return render_template("shop/index.html", products=products)
+        case "new":
+            all_products = Products.query.all()
+            day, month, year = get_time().split("/")
+            today_datetime_obj = datetime(year=int(year), month=int(month), day=int(day))
+            products = []
+            for product in all_products:
+                product_day, product_month, product_year = product.date_added.split("/")
+                product_datetime_obj = datetime(year=int(product_year), month=int(product_month), day=int(product_day))
+                if (product_datetime_obj - today_datetime_obj).days < 3:
+                    products.append(product)
+
+            return render_template("shop/index.html", products=products)
+
+    products = Products.query.all()
+    return render_template("shop/index.html", products=products)
 
 
 @eshop.route("/user/login", methods=["GET", "POST"])
@@ -96,6 +132,11 @@ def signup():
             return redirect(url_for("signup"))
 
     return render_template("auth/signup.html", form=form)
+
+
+@eshop.route("/admin")
+def admin():
+    return render_template("admin/index.html")
 
 
 if "__main__" == __name__:
