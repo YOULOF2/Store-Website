@@ -148,21 +148,8 @@ def logout():
     return redirect(url_for("home"))
 
 
-@eshop.route("/cart/add")
-@is_authenticated
-def add_to_cart():
-    product_id = request.args.get("product_id")
-    product_obj = Products.query.filter_by(product_id=product_id).first()
-    user_cart = current_user.shopping_cart
-
-    user_cart.append(product_obj)
-    db.session.commit()
-    print(user_cart)
-
-    return redirect(url_for("home"))
-
-
-@eshop.route("/user/cart")
+# Shopping cart
+@eshop.route("/cart/")
 @is_authenticated
 def cart():
     current_user_id = current_user.get_id()
@@ -176,6 +163,36 @@ def cart():
         else:
             sub_total += product.price
     return render_template("shop/cart.html", cart=user_cart, sub_total=sub_total)
+
+
+@eshop.route("/cart/add")
+@is_authenticated
+def add_to_cart():
+    product_id = request.args.get("product_id")
+    product_obj = Products.query.filter_by(product_id=product_id).first()
+    user_cart = current_user.shopping_cart
+
+    user_cart.append(product_obj)
+    db.session.commit()
+
+    return redirect(url_for("home"))
+
+
+@eshop.route("/cart/remove")
+@is_authenticated
+def remove_from_cart():
+    product_id = request.args.get("product_id")
+    product_obj = Products.query.filter_by(product_id=product_id).first()
+    user_cart = current_user.shopping_cart
+
+    if product_obj.product_id == product_id:
+        for obj in user_cart:
+            if obj.product_id == product_id:
+                index = user_cart.index(obj)
+                del user_cart[index]
+        db.session.commit()
+
+    return redirect(url_for("cart"))
 
 
 @eshop.route("/product")

@@ -25,6 +25,9 @@ class User(db.Model, UserMixin):
 
     wish_list = db.Column(MutableList.as_mutable(PickleType), default=[])
 
+    addresses = db.Column(MutableList.as_mutable(PickleType), default=[])
+    payment_methods = db.Column(MutableList.as_mutable(PickleType), default=[])
+
 
 class Products(db.Model):
     __tablename__ = "products"

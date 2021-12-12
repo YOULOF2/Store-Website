@@ -39,9 +39,8 @@
                 </div>
                 <p class="lead">{{ product.desc|safe }}</p>
                 <div class="d-flex">
-                    <input class="form-control text-center me-3" id="inputQuantity" value="1"
-                           style="max-width: 3rem"/>
-                    <a class="btn btn-outline-dark flex-shrink-0" type="button" href="{{ url_for('add_to_cart', product_id=product.product_id) }}">
+                    <a class="btn btn-outline-dark flex-shrink-0" type="button"
+                       href="{{ url_for('add_to_cart', product_id=product.product_id) }}">
                         <i class="bi-cart-fill me-1"></i>
                         Add to cart
                     </a>

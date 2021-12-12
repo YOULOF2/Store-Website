@@ -51,15 +51,10 @@
                         {% else %}
                         <td data-th="Price">${{ item.price }}</td>
                         {% endif %}
-                        <td data-th="Quantity">
-                            <input type="number" class="form-control form-control-lg text-center" value="1">
-                        </td>
                         <td class="actions" data-th="">
                             <div class="text-right">
-                                <a class="btn btn-white border-secondary bg-white btn-md mb-2">
-                                    Update
-                                </a>
-                                <a class="btn btn-white border-secondary bg-white btn-md mb-2">
+                                <a class="btn btn-white border-secondary bg-white btn-md mb-2"
+                                   href="{{ url_for('remove_from_cart', product_id=item.product_id) }}">
                                     ❌
                                 </a>
                             </div>
