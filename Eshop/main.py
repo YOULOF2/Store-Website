@@ -2,13 +2,13 @@ from flask import Flask, render_template, redirect, url_for, request, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_user, logout_user, LoginManager
 from database import User, Products, db, get_time
-from forms import LoginForm, SignUpForm
+from forms import LoginForm, SignUpForm, ModifyProduct
 from dotenv import load_dotenv
 from os import getenv
 from pathlib import Path
 from uuid import uuid4
 from datetime import datetime
-from decorators import is_authenticated, not_authenticated
+from decorators import is_authenticated, not_authenticated, is_admin
 
 DATABASE_FILE_LOCATION = "database.db"
 SALT_TIMES = 10
@@ -58,7 +58,6 @@ def home():
     #     )
     #     db.session.add(new_product)
     #     db.session.commit()
-
     sort_type = request.args.get("sort")
     match sort_type:
         case "popular":
@@ -80,6 +79,15 @@ def home():
 
     products = Products.query.all()
     return render_template("shop/index.html", products=products)
+
+
+@eshop.route("/product/modify")
+@is_admin
+def product_modify():
+    product_id = request.args.get("product_id")
+    item = Products.queryfilter_by(product_id=product_id).first()
+    form = ModifyProduct()
+#     Todo: Populate the ModifyProduct form with data
 
 
 @eshop.route("/user/login", methods=["GET", "POST"])

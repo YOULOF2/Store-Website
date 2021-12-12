@@ -23,3 +23,13 @@ def is_authenticated(function):
             return redirect(url_for("login"))
 
     return wrapper
+
+
+def is_admin(function):
+    @wraps(function)
+    def wrapper(*args, **kwargs):
+        if current_user.get_id() == "1":
+            return function(*args, **kwargs)
+        else:
+            return redirect(url_for("home"))
+    return wrapper
