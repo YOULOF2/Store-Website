@@ -2,13 +2,16 @@ from flask import Flask, render_template, redirect, url_for, request, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_user, logout_user, LoginManager
 from database import User, Products, db, get_time
-from forms import LoginForm, SignUpForm, ModifyProduct
+from forms import LoginForm, SignUpForm, ModifyProduct, CreateProduct
 from dotenv import load_dotenv
 from os import getenv
 from pathlib import Path
 from uuid import uuid4
 from datetime import datetime
 from decorators import is_authenticated, not_authenticated, is_admin
+from flask_ckeditor import CKEditor
+from distutils.util import strtobool
+from random import choice
 
 DATABASE_FILE_LOCATION = "database.db"
 SALT_TIMES = 10
@@ -21,6 +24,7 @@ def create_app():
 
     db.init_app(flask_app)
     login_manager.init_app(flask_app)
+    ckeditor = CKEditor(app=flask_app)
 
     flask_app.secret_key = getenv("SECRET_KEY")
     flask_app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DATABASE_FILE_LOCATION}"
@@ -45,19 +49,6 @@ def load_user(user_id):
 
 @eshop.route("/")
 def home():
-    # for _ in range(50):
-    #     new_product = Products(
-    #         product_id=str(uuid4()).split("-")[0],
-    #         pictures=["https://www.ubuy.com.bh/productimg/?image"
-    #                   "=aHR0cHM6Ly9tLm1lZGlhLWFtYXpvbi5jb20vaW1hZ2VzL0kvNTFjR0NCeHFyUkwuX0FDX1NMMTAwMF8uanBn.jpg"],
-    #         name="Teddy Bear",
-    #         desc=" Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-    #         quantity_available=10,
-    #         price=10.00,
-    #         rating=3
-    #     )
-    #     db.session.add(new_product)
-    #     db.session.commit()
     sort_type = request.args.get("sort")
     match sort_type:
         case "popular":
@@ -81,15 +72,7 @@ def home():
     return render_template("shop/index.html", products=products)
 
 
-@eshop.route("/product/modify")
-@is_admin
-def product_modify():
-    product_id = request.args.get("product_id")
-    item = Products.queryfilter_by(product_id=product_id).first()
-    form = ModifyProduct()
-#     Todo: Populate the ModifyProduct form with data
-
-
+# User =================================================================================================================
 @eshop.route("/user/login", methods=["GET", "POST"])
 @not_authenticated
 def login():
@@ -156,7 +139,7 @@ def logout():
     return redirect(url_for("home"))
 
 
-# Shopping cart
+# Shopping Cart ========================================================================================================
 @eshop.route("/cart/")
 @is_authenticated
 def cart():
@@ -203,6 +186,7 @@ def remove_from_cart():
     return redirect(url_for("cart"))
 
 
+# Products =============================================================================================================
 @eshop.route("/product")
 def show_product():
     product_id = request.args.get("product_id")
@@ -210,9 +194,83 @@ def show_product():
     return render_template("shop/product.html", product=product_obj)
 
 
-@eshop.route("/admin")
-def admin():
-    return render_template("admin/index.html")
+@eshop.route("/product/modify", methods=["GET", "POST"])
+@is_admin
+def modify_product():
+    print(f"{request.method = }")
+    product_id = request.args.get("product_id")
+    item = Products.query.filter_by(product_id=product_id).first()
+    form = ModifyProduct(
+        product_name=item.name,
+        desc=item.desc,
+        quantity_available=item.quantity_available,
+        on_sale=item.on_sale,
+        price=item.price,
+        price_after_sale=item.price_after_sale
+    )
+    print(f"{product_id = }")
+    if request.method == "POST":
+        if form.validate_on_submit():
+            new_product_name = form.product_name.data
+            new_desc = form.desc.data
+            new_quantity_available = form.quantity_available.data
+            new_on_sale = bool(strtobool(form.on_sale.data))
+            new_price = form.price.data
+            new_price_after_sale = form.price_after_sale.data
+
+            item.name = new_product_name
+            item.desc = new_desc
+            item.quantity_available = new_quantity_available
+            item.on_sale = new_on_sale
+            item.price = new_price
+            item.price_after_sale = new_price_after_sale
+
+            db.session.commit()
+            return redirect(url_for("home"))
+    return render_template("shop/edit_product.html", form=form, product_id=product_id)
+
+
+@eshop.route("/product/create", methods=["POST", "GET"])
+@is_admin
+def create_product():
+    form = CreateProduct()
+    if request.method == "POST":
+        if form.validate_on_submit():
+            pictures = form.pictures.data.split(",")
+            name = form.product_name.data
+            description = form.desc.data
+            quantity_available = form.quantity_available.data
+            on_sale = bool(strtobool(form.on_sale.data))
+            price = form.price.data
+            price_after_sale = form.price_after_sale.data
+
+            product_id = choice(str(uuid4()).split("-"))
+            new_product = Products(
+                product_id=product_id,
+                name=name,
+                desc=description,
+                quantity_available=quantity_available,
+                pictures=pictures,
+                on_sale=on_sale,
+                price_after_sale=price_after_sale,
+                price=price
+            )
+            db.session.add(new_product)
+            db.session.commit()
+
+            return redirect(url_for("home"))
+
+    return render_template("shop/create_product.html", form=form)
+
+
+@eshop.route("/product/delete", methods=["GET"])
+@is_admin
+def remove_product():
+    product_id = request.args.get("product_id")
+    product_obj = Products.query.filter_by(product_id=product_id).first()
+    db.session.delete(product_obj)
+    db.session.commit()
+    return redirect(url_for("home"))
 
 
 if "__main__" == __name__:

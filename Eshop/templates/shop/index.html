@@ -8,6 +8,9 @@
         <div class="text-center text-white">
             <h1 class="display-4 fw-bolder">Teddy Bear Store</h1>
             <p class="lead fw-normal text-white-50 mb-0">100% ethically sourced teddy bears.</p>
+            {% if current_user.get_id() == "1" %}
+            <a class="btn btn-outline-info" href="{{ url_for('create_product') }}">Create Product</a>
+            {% endif %}
         </div>
     </div>
 </header>
@@ -24,7 +27,8 @@
                     </div>
                     {% endif %}
                     <!-- Product image-->
-                    <img class="card-img-top" src="{{ product.pictures[0] }}" alt="{{ product.name }}"/>
+                    <img class="card-img-top" src="{{ product.pictures[0] }}"
+                         alt="{{ product.name }}"/>
                     <!-- Product details-->
                     <div class="card-body p-4">
                         <div class="text-center">
@@ -32,13 +36,15 @@
                             <h5 class="fw-bolder">{{ product.name }}</h5>
                             <!-- Product reviews-->
                             <div class="d-flex justify-content-center small text-warning mb-2">
+                                ({{ product.quantity_sold }})
                                 {% for _ in range(product.rating) %}
                                 <div class="bi-star-fill"></div>
                                 {% endfor %}
                             </div>
                             {% if product.on_sale %}
                             <!-- Product price-->
-                            <span class="text-muted text-decoration-line-through">${{ product.sale }}</span>
+                            <span class="text-muted text-decoration-line-through">${{ product.price }}</span>
+                            <br>
                             ${{ product.price_after_sale }}
                             {% else %}
                             ${{ product.price }}
@@ -48,19 +54,22 @@
                     <!-- Product actions-->
 
                     <div class="card-footer pt-0 border-top-0 bg-transparent">
-                        <div class="text-center"><a class="btn btn-outline-primary mt-auto"
-                                                    href="{{ url_for('show_product', product_id=product.product_id) }}">
-                            Learn More</a>
+                        <div class="text-center">
+                            <a class="btn btn-outline-primary mt-auto"
+                               href="{{ url_for('show_product', product_id=product.product_id) }}">
+                                Learn More</a>
                         </div>
 
-                        <div class="text-center"><a class="btn btn-outline-dark mt-auto"
-                                                    href="{{ url_for('add_to_cart', product_id=product.product_id) }}">
-                            Add to cart</a>
+                        <div class="text-center">
+                            <a class="btn btn-outline-dark mt-auto"
+                               href="{{ url_for('add_to_cart', product_id=product.product_id) }}">
+                                Add to cart</a>
                         </div>
 
                         {% if current_user.get_id() == "1" %}
                         <div class="text-center">
-                            <a href="#" style="color: #660000;">Modify</a>
+                            <a href="{{ url_for('modify_product', product_id=product.product_id) }}"
+                               style="color: #660000;">Modify</a>
                         </div>
                         {% endif %}
                     </div>

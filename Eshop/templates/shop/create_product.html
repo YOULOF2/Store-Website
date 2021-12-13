@@ -16,9 +16,12 @@
 
 <section class="py-5">
     <div class="container px-4 px-lg-5 mt-5">
-        <form method="post" action="{{ url_for('modify_product', product_id=product_id) }}">
+        <form method="post" action="{{ url_for('create_product') }}">
             {{ form.csrf_token }}
-
+            <div class="form-group">
+                {{ form.pictures.label(for_="InputPictures") }}
+                {{ form.pictures(type_="text", class_="form-control", id="InputPictures") }}
+            </div>
             <div class="form-group">
                 {{ form.product_name.label(for_="InputProductName") }}
                 {{ form.product_name(type_="text", class_="form-control", id="InputProductName") }}
@@ -42,7 +45,7 @@
             </div>
             <div class="d-grid gap-2">
                 {{ form.submit(type_="submit", class_="btn btn-outline-success") }}
-                <a class="btn btn-outline-danger" href="{{ url_for('remove_product', product_id=product_id) }}">Remove Product</a>
+                <a class="btn btn-outline-danger" href="{{ url_for('home') }}">Cancel</a>
             </div>
         </form>
     </div>

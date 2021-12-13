@@ -1,6 +1,11 @@
 {% extends "shop/base.html" %}
 
-{% block title %}{% endblock %}
+{% block styles %}
+{{ super() }}
+.description {
+    padding: 1rem 0;
+}
+{% endblock %}
 
 {% block body %}
 <!-- Product section-->
@@ -10,20 +15,25 @@
             <div class="col-md-6">
                 <div id="ImageCard" class="carousel slide" data-ride="carousel">
                     <div class="carousel-inner">
+                        <div class="carousel-item active adaptive-image-container">
+                            <img class="d-block w-100 adaptive-image" src="{{ product.pictures[0] }}" alt="{{ product.name }}">
+                        </div>
                         {% for picture in product.pictures %}
-                        <div class="carousel-item active">
-                            <img class="d-block w-100" src="{{ picture }}" alt="{{ product.name }}">
+                        <div class="carousel-item adaptive-image-container">
+                            <img class="d-block w-100 adaptive-image" src="{{ picture }}" alt="{{ product.name }}">
                         </div>
                         {% endfor %}
                     </div>
-                    <a class="carousel-control-prev" href="#ImageCard" role="button" data-slide="prev">
+                    <button class="carousel-control-prev" type="button" data-bs-target="#ImageCard"
+                            data-bs-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="sr-only">Previous</span>
-                    </a>
-                    <a class="carousel-control-next" href="#ImageCard" role="button" data-slide="next">
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#ImageCard"
+                            data-bs-slide="next">
                         <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="sr-only">Next</span>
-                    </a>
+                        <span class="visually-hidden">Next</span>
+                    </button>
                 </div>
             </div>
             <div class="col-md-6">
@@ -37,7 +47,6 @@
                     <span>${{ product.price }}</span>
                     {% endif %}
                 </div>
-                <p class="lead">{{ product.desc|safe }}</p>
                 <div class="d-flex">
                     <a class="btn btn-outline-dark flex-shrink-0" type="button"
                        href="{{ url_for('add_to_cart', product_id=product.product_id) }}">
@@ -46,6 +55,8 @@
                     </a>
                 </div>
             </div>
+            <p class="lead description">{{ product.desc|safe }}</p>
+
         </div>
     </div>
 </section>
