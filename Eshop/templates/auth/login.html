@@ -24,7 +24,7 @@
                     <p class="text-muted"> Please enter your email and password!</p>
                     {{ form.email(placeholder="Email") }}
                     {{ form.password(placeholder="Password") }}
-                    <a class="forgot text-muted" href="#">Forgot password?</a>
+                    <a class="forgot text-muted" href="{{ url_for('forgot_password') }}">Forgot password?</a>
                     {{ form.submit(value="Login!") }}
                     <a class="forgot text-muted" href="{{ url_for('signup') }}"> Don't have an Account? Signup here!</a>
                 </form>

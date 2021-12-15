@@ -2,7 +2,7 @@ from flask import Flask, render_template, redirect, url_for, request, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_user, logout_user, LoginManager
 from database import User, Products, db, get_time
-from forms import LoginForm, SignUpForm, ModifyProduct, CreateProduct
+from forms import LoginForm, SignUpForm, ModifyProduct, CreateProduct, ForgotPasswordForm, UpdatePassword
 from dotenv import load_dotenv
 from os import getenv
 from pathlib import Path
@@ -12,6 +12,7 @@ from decorators import is_authenticated, not_authenticated, is_admin
 from flask_ckeditor import CKEditor
 from distutils.util import strtobool
 from random import choice
+from emails import send_pass_reset, decode_url
 
 DATABASE_FILE_LOCATION = "database.db"
 SALT_TIMES = 10
@@ -139,6 +140,50 @@ def logout():
     return redirect(url_for("home"))
 
 
+@eshop.route("/user/password/forgot", methods=["GET", "POST"])
+def forgot_password():
+    form = ForgotPasswordForm()
+    if request.method == "POST":
+        if form.validate_on_submit():
+            print("Sending email")
+            email = form.email.data
+            found_user = True if User.query.filter_by(email=email).first() is not None else False
+            if found_user:
+                send_pass_reset(user_email=email)
+                flash("Email Is sent to you, check your inbox!")
+                return redirect(url_for("login"))
+    return render_template("auth/forgot_password.html", form=form)
+
+
+@eshop.route("/user/password/reset", methods=["GET", "POST"])
+def reset_password():
+    form = UpdatePassword()
+    request_id = request.args.get("request_id")
+    if request_id is None:
+        flash("Invalid request url")
+        return redirect(url_for("login"))
+    decoded_id = decode_url(request_id)
+
+    if request.method == "POST":
+        email = decoded_id.get("email")
+        password = form.new_password.data
+        user_obj = User.query.filter_by(email=email).first()
+        user_obj.password = password
+        db.session.commit()
+        return redirect(url_for("home"))
+    else:
+        email_present = True if User.query.filter_by(email=decoded_id.get("email")).first() is not None else False
+        time_accepted = True if decoded_id.get("time dif") <= 900 else False
+        if email_present and time_accepted:
+            return render_template("update_password.html", form=form)
+
+        if not email_present:
+            flash("Invalid Email Inputted")
+        elif not time_accepted:
+            flash("Password reset expired")
+        return redirect(url_for("login"))
+
+
 # Shopping Cart ========================================================================================================
 @eshop.route("/cart/")
 @is_authenticated
@@ -147,12 +192,14 @@ def cart():
     user_obj = User.query.get(current_user_id)
     user_cart = user_obj.shopping_cart
 
-    sub_total = 0
+    raw_sub_total = 0
     for product in user_cart:
         if product.on_sale:
-            sub_total += product.price_after_sale
+            raw_sub_total += product.price_after_sale
         else:
-            sub_total += product.price
+            raw_sub_total += product.price
+    # https://thepythonguru.com/python-string-formatting/
+    sub_total = float("{:.2f}".format(raw_sub_total))
     return render_template("shop/cart.html", cart=user_cart, sub_total=sub_total)
 
 

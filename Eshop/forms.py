@@ -17,6 +17,16 @@ class SignUpForm(FlaskForm):
     submit = SubmitField()
 
 
+class ForgotPasswordForm(FlaskForm):
+    email = StringField(validators=[DataRequired(), Email()])
+    submit = SubmitField()
+
+
+class UpdatePassword(FlaskForm):
+    new_password = PasswordField(validators=[DataRequired()])
+    submit = SubmitField()
+
+
 class ModifyProduct(FlaskForm):
     product_name = StringField(label="Product name", validators=[DataRequired()])
     desc = CKEditorField(label="Description")
