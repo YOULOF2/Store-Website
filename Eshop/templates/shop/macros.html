@@ -1,0 +1,15 @@
+{% macro header_bar(current_user) %}
+<!-- Header-->
+<header class="bg-dark py-5">
+    <div class="container px-4 px-lg-5 my-5">
+        <div class="text-center text-white">
+            <h1 class="display-4 fw-bolder">Teddy Bear Store</h1>
+            <p class="lead fw-normal text-white-50 mb-0">100% ethically sourced teddy bears.</p>
+            {% if current_user.get_id() == "1" %}
+            <a class="btn btn-outline-info" href="{{ url_for('create_product') }}">Create Product</a>
+            {% endif %}
+        </div>
+    </div>
+</header>
+{% endmacro %}
+

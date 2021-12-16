@@ -23,7 +23,7 @@ class ForgotPasswordForm(FlaskForm):
 
 
 class UpdatePassword(FlaskForm):
-    new_password = PasswordField(validators=[DataRequired()])
+    new_password = StringField(validators=[DataRequired()])
     submit = SubmitField()
 
 

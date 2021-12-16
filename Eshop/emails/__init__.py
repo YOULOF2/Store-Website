@@ -17,7 +17,7 @@ CIPHER_KEY = Fernet(KEY)
 
 
 def create_request_id(user_email):
-    formatted_time = datetime.now().strftime("%m/%d/%Y|%H:%M:%S")
+    formatted_time = datetime.now().strftime("%d/%m/%Y|%H:%M:%S")
     raw_id = f"{user_email}-{formatted_time}"
     raw_id_bytes = str.encode(raw_id)
     request_id = CIPHER_KEY.encrypt(raw_id_bytes)
@@ -28,11 +28,12 @@ def decode_url(request_id):
     request_id_bytes = str.encode(request_id)
     decrypted_id = CIPHER_KEY.decrypt(request_id_bytes)
     raw_id = decrypted_id.decode()
+    print(f"{raw_id = }")
     email, date_time = raw_id.split("-")
     date, time = date_time.split("|")
 
-    day, month, year = date.split("/")
-    hour, minute, seconds = time.split(":")
+    day, month, year = [int(i) for i in date.split("/")]
+    hour, minute, seconds = [int(i) for i in time.split(":")]
 
     current_time = datetime.now()
     datetime_obj = datetime(day=day, month=month, year=year, hour=hour, minute=minute, second=seconds)
@@ -47,7 +48,7 @@ def decode_url(request_id):
 
 def send_pass_reset(user_email):
     def generate_recovery_email():
-        endpoint = url_for("reset_password", request_id=request_id)
+        endpoint = url_for("reset_password", request_id=request_id).removeprefix("/")
         return f"{request.url_root}{endpoint}"
 
     message = MIMEMultipart("alternative")

@@ -1,18 +1,12 @@
 {% extends "shop/base.html" %}
+{% import "shop/macros.html" macros %}
 
 {% block title %}Edit Product{% endblock %}
 
 {% block title_ext %}{{ ckeditor.load() }}{{ ckeditor.config(name="Description") }}{% endblock %}
 
 {% block body %}
-<header class="bg-dark py-5">
-    <div class="container px-4 px-lg-5 my-5">
-        <div class="text-center text-white">
-            <h1 class="display-4 fw-bolder">Teddy Bear Store</h1>
-            <p class="lead fw-normal text-white-50 mb-0">100% ethically sourced teddy bears.</p>
-        </div>
-    </div>
-</header>
+{{ macros.header_bar(current_user) }}
 
 <section class="py-5">
     <div class="container px-4 px-lg-5 mt-5">

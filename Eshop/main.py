@@ -85,7 +85,6 @@ def login():
             user_obj = User.query.filter_by(email=email).first()
 
             if user_obj is not None:
-                print(f"{vars(user_obj) = }")
                 is_pass_correct = check_password_hash(password=password, pwhash=user_obj.password)
                 if is_pass_correct:
                     login_user(user_obj)
@@ -145,7 +144,6 @@ def forgot_password():
     form = ForgotPasswordForm()
     if request.method == "POST":
         if form.validate_on_submit():
-            print("Sending email")
             email = form.email.data
             found_user = True if User.query.filter_by(email=email).first() is not None else False
             if found_user:
@@ -165,17 +163,21 @@ def reset_password():
     decoded_id = decode_url(request_id)
 
     if request.method == "POST":
+        # If request method is 'post'
         email = decoded_id.get("email")
         password = form.new_password.data
         user_obj = User.query.filter_by(email=email).first()
-        user_obj.password = password
+        hashed_password = generate_password_hash(password, salt_length=SALT_TIMES)
+        user_obj.password = hashed_password
         db.session.commit()
-        return redirect(url_for("home"))
+        flash("Your password has been changed, you can login now!")
+        return redirect(url_for("login"))
     else:
+        # If request method is 'get'
         email_present = True if User.query.filter_by(email=decoded_id.get("email")).first() is not None else False
         time_accepted = True if decoded_id.get("time dif") <= 900 else False
         if email_present and time_accepted:
-            return render_template("update_password.html", form=form)
+            return render_template("auth/update_password.html", form=form, request_id=request_id)
 
         if not email_present:
             flash("Invalid Email Inputted")
@@ -244,7 +246,6 @@ def show_product():
 @eshop.route("/product/modify", methods=["GET", "POST"])
 @is_admin
 def modify_product():
-    print(f"{request.method = }")
     product_id = request.args.get("product_id")
     item = Products.query.filter_by(product_id=product_id).first()
     form = ModifyProduct(
@@ -255,7 +256,6 @@ def modify_product():
         price=item.price,
         price_after_sale=item.price_after_sale
     )
-    print(f"{product_id = }")
     if request.method == "POST":
         if form.validate_on_submit():
             new_product_name = form.product_name.data
