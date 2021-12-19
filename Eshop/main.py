@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request, flash
+from flask import Flask, render_template, redirect, url_for, request, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_user, logout_user, LoginManager
 from database import User, Products, db, get_time
@@ -186,8 +186,45 @@ def reset_password():
         return redirect(url_for("login"))
 
 
+@eshop.route("/user/wish-list")
+@is_authenticated
+def show_wish_list():
+    user_obj = User.query.get(current_user.get_id())
+    wish_list = user_obj.wish_list
+    print(f"show with_list: {wish_list = }")
+    return render_template("shop/wish-list.html", wish_list=wish_list)
+
+
+@eshop.route("/user/wish-list/add")
+@is_authenticated
+def add_wish_list():
+    user_obj = User.query.get(current_user.get_id())
+    product_id = request.args.get("product_id")
+
+    product_obj = Products.query.filter_by(product_id=product_id).first()
+    user_obj.wish_list.append(product_obj)
+    db.session.commit()
+
+    return redirect(url_for("show_wish_list"))
+
+
+@eshop.route("/user/wish-list/remove")
+@is_authenticated
+def remove_wish_list():
+    user_obj = User.query.get(current_user.get_id())
+    product_id = request.args.get("product_id")
+
+    product_obj = Products.query.filter_by(product_id=product_id).first()
+    for product in user_obj.wish_list:
+        if product.product_id == product_obj.product_id:
+            user_obj.wish_list.remove(product)
+    db.session.commit()
+
+    return redirect(url_for("show_wish_list"))
+
+
 # Shopping Cart ========================================================================================================
-@eshop.route("/cart/")
+@eshop.route("/cart")
 @is_authenticated
 def cart():
     current_user_id = current_user.get_id()
@@ -233,6 +270,13 @@ def remove_from_cart():
         db.session.commit()
 
     return redirect(url_for("cart"))
+
+
+@eshop.route("/cart/checkout")
+@is_authenticated
+def checkout():
+    user_obj = User.query.get(current_user.get_id())
+    shopping_cart = user_obj.shopping_cart
 
 
 # Products =============================================================================================================

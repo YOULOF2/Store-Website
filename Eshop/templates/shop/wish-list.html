@@ -1,16 +1,21 @@
 {% extends "shop/base.html" %}
 
-{% block title %}Cart{% endblock %}
+{% block title %}wish_list{% endblock %}
+
+{% block styles %}
+footer {
+margin-top: 15%;
+}
+{% endblock %}
 
 {% block body %}
-
 <section class="pt-5 pb-5">
     <div class="container">
         <div class="row w-100">
             <div class="col-lg-12 col-md-12 col-12">
-                <h3 class="display-5 mb-2 text-center">Shopping Cart</h3>
+                <h3 class="display-5 mb-2 text-center">Wish list</h3>
                 <p class="mb-5 text-center">
-                    <i class="text-info font-weight-bold">{{ cart|length }}</i> items in your cart</p>
+                    <i class="text-info font-weight-bold">{{ wish_list|length }}</i> items in your wish list</p>
                 <table id="shoppingCart" class="table table-condensed table-responsive">
                     <thead>
                     <tr>
@@ -21,19 +26,18 @@
                     </tr>
                     </thead>
                     <tbody>
-                    {% if cart|length == 0 %}
+                    {% if wish_list|length == 0 %}
                     <tr>
                         <td data-th="Product">
                             <div class="row">
                                 <div class="col-md-9 text-left mt-sm-2">
-                                    <h4>Your Cart is empty</h4>
+                                    <h4>Your wish list is empty</h4>
                                 </div>
                             </div>
                         </td>
                     </tr>
                     {% endif %}
-
-                    {% for item in cart %}
+                    {% for item in wish_list %}
                     <tr>
                         <td data-th="Product">
                             <div class="row">
@@ -54,7 +58,7 @@
                         <td class="actions" data-th="">
                             <div class="text-right">
                                 <a class="btn btn-white border-secondary bg-white btn-md mb-2"
-                                   href="{{ url_for('remove_from_cart', product_id=item.product_id) }}">
+                                   href="{{ url_for('remove_wish_list', product_id=item.product_id) }}">
                                     ❌
                                 </a>
                             </div>
@@ -63,16 +67,9 @@
                     {% endfor %}
                     </tbody>
                 </table>
-                <div class="float-right text-right">
-                    <h4>Subtotal:</h4>
-                    <h1>${{ sub_total }}</h1>
-                </div>
             </div>
         </div>
         <div class="row mt-4 d-flex align-items-center">
-            <div class="col-sm-6 order-md-2 text-right">
-                <a href="catalog.html" class="btn btn-primary mb-4 btn-lg pl-5 pr-5">Checkout</a>
-            </div>
             <div class="col-sm-6 mb-3 mb-m-1 order-md-1 text-md-left">
                 <a href="{{ url_for('home') }}">
                     <i class="fas fa-arrow-left mr-2"></i> Continue Shopping</a>

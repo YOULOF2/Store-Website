@@ -28,9 +28,18 @@
                             <!-- Product reviews-->
                             <div class="d-flex justify-content-center small text-warning mb-2">
                                 ({{ product.quantity_sold }})
+                                {% if product.rating == 0 %}
+                                {% for _ in range(5) %}
+                                <div class="bi-star"></div>
+                                {% endfor %}
+                                {% else %}
                                 {% for _ in range(product.rating) %}
                                 <div class="bi-star-fill"></div>
                                 {% endfor %}
+                                {% for _ in range(5 - product.rating) %}
+                                <div class="bi-star"></div>
+                                {% endfor %}
+                                {% endif %}
                             </div>
                             {% if product.on_sale %}
                             <!-- Product price-->
@@ -43,7 +52,6 @@
                         </div>
                     </div>
                     <!-- Product actions-->
-
                     <div class="card-footer pt-0 border-top-0 bg-transparent">
                         <div class="text-center">
                             <a class="btn btn-outline-primary mt-auto"

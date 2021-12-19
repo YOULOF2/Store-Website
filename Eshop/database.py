@@ -1,6 +1,8 @@
+import sqlalchemy.orm
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.mutable import MutableList
-from sqlalchemy import PickleType
+from sqlalchemy.orm import relationship
+from sqlalchemy import PickleType, ForeignKey
 from flask_login import UserMixin
 from datetime import datetime
 
@@ -9,8 +11,8 @@ db = SQLAlchemy()
 
 def get_time():
     datetime_obj = datetime.now()
-    formated_datetime = datetime_obj.strftime("%d/%m/%Y")
-    return str(formated_datetime)
+    formatted_datetime = datetime_obj.strftime("%d/%m/%Y")
+    return str(formatted_datetime)
 
 
 class User(db.Model, UserMixin):
@@ -48,10 +50,19 @@ class Products(db.Model):
 
     rating = db.Column(db.Integer, nullable=False, default=0)
 
+    sales = relationship("Sales", back_populates="product")
+
 
 class Sales(db.Model):
     __tablename__ = "sales"
     id = db.Column(db.Integer, primary_key=True)
 
-    items_sold = db.Column(db.Integer, nullable=False, default=0)
-    total_profit = db.Column(db.Integer, nullable=False, default=0.0)
+    product_id = db.Column(db.Integer, ForeignKey('products.id'))
+    product = relationship("Products", back_populates="sales")
+
+    product_sold = db.Column(MutableList.as_mutable(PickleType), default=[])
+# {
+#     "price": product_price,
+#     "date_sold": date_sold,
+#     "was_on_sale": was_on_sale,
+# }

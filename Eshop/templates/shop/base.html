@@ -14,6 +14,7 @@
           integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <!-- Core theme CSS (includes Bootstrap)-->
     <link href="{{ url_for('static', filename='shop/css/styles.css') }}" rel="stylesheet"/>
+    <script src="https://kit.fontawesome.com/6196f79296.js" crossorigin="anonymous"></script>
     {% block title_ext %}{% endblock %}
     <style>
     .adaptive-image {
@@ -48,6 +49,7 @@
                         <li><a class="dropdown-item" href="{{ url_for('login') }}">Login</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('signup') }}">Sign Up</a></li>
                         {% else %}
+                        <li><a class="dropdown-item" href="{{ url_for('show_wish_list') }}">Wish List</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
                         {% endif %}
                     </ul>

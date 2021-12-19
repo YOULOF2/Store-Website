@@ -3,7 +3,14 @@
 {% block styles %}
 {{ super() }}
 .description {
-    padding: 1rem 0;
+padding: 1rem 0;
+}
+.carousel-control-prev-icon {
+background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23000000' viewBox='0 0 8 8'%3E%3Cpath d='M5.25 0l-4 4 4 4 1.5-1.5-2.5-2.5 2.5-2.5-1.5-1.5z'/%3E%3C/svg%3E") !important;
+}
+
+.carousel-control-next-icon {
+background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23000000' viewBox='0 0 8 8'%3E%3Cpath d='M2.75 0l-1.5 1.5 2.5 2.5-2.5 2.5 1.5 1.5 4-4-4-4z'/%3E%3C/svg%3E") !important;
 }
 {% endblock %}
 
@@ -16,9 +23,10 @@
                 <div id="ImageCard" class="carousel slide" data-ride="carousel">
                     <div class="carousel-inner">
                         <div class="carousel-item active adaptive-image-container">
-                            <img class="d-block w-100 adaptive-image" src="{{ product.pictures[0] }}" alt="{{ product.name }}">
+                            <img class="d-block w-100 adaptive-image" src="{{ product.pictures[0] }}"
+                                 alt="{{ product.name }}">
                         </div>
-                        {% for picture in product.pictures %}
+                        {% for picture in product.pictures[1:] %}
                         <div class="carousel-item adaptive-image-container">
                             <img class="d-block w-100 adaptive-image" src="{{ picture }}" alt="{{ product.name }}">
                         </div>
@@ -47,7 +55,12 @@
                     <span>${{ product.price }}</span>
                     {% endif %}
                 </div>
-                <div class="d-flex">
+                <div class="d-grid gap-2">
+                    <a class="btn btn-outline-danger flex-shrink-0" type="button"
+                    href="{{ url_for('add_wish_list', product_id=product.product_id) }}">
+                        <i class="fas fa-heart"></i>
+                        Add to wish list
+                    </a>
                     <a class="btn btn-outline-dark flex-shrink-0" type="button"
                        href="{{ url_for('add_to_cart', product_id=product.product_id) }}">
                         <i class="bi-cart-fill me-1"></i>

@@ -1,4 +1,5 @@
 {% extends "auth/base.html" %}
+{% import "auth/macros.html" as macro %}
 
 
 {% block title%}Sign Up{% endblock %}
@@ -9,18 +10,9 @@
         <div class="col-md-6">
             <div class="card">
                 <form class="box" method="post" action="{{ url_for('signup') }}">
-                    {% with messages = get_flashed_messages() %}
-                        {% if messages %}
-                            <ul class=flashes>
-                                {% for message in messages %}
-                                    <li style="color:white;">{{ message }}</li>
-                                {% endfor %}
-                            </ul>
-                        {% endif %}
-                    {% endwith %}
-
                     {{ form.csrf_token }}
                     <h1>Sign Up</h1>
+                    {{ macro.flash_messages(get_flashed_messages) }}
                     <p class="text-muted"> Please enter your name, email and password!</p>
                     {{ form.username(placeholder="Username") }}
                     {{ form.email(placeholder="Email") }}
